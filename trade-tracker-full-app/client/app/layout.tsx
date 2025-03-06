@@ -1,11 +1,14 @@
 import "@/styles/globals.css";
 import { Metadata } from "next";
 import { Toaster } from "sonner";
+import { auth } from "@/auth";
+import { SessionProvider } from "next-auth/react";
 
 import { fontSans } from "@/lib/fonts";
 import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'),
   title: "AI Trading Agent - Coming Soon",
   description:
     "Join the waitlist for our revolutionary AI Trading Agent. Harness the power of artificial intelligence to transform your trading strategy.",
@@ -18,7 +21,9 @@ interface RootLayoutProps {
   children: React.ReactNode;
 }
 
-export default function RootLayout({ children }: RootLayoutProps) {
+export default async function RootLayout({ children }: RootLayoutProps) {
+  const session = await auth();
+
   return (
     <html lang="en" suppressHydrationWarning>
       <head />
@@ -28,8 +33,10 @@ export default function RootLayout({ children }: RootLayoutProps) {
           fontSans.variable
         )}
       >
-        <Toaster position="top-center" />
-        {children}
+        <SessionProvider session={session}>
+          <Toaster position="top-center" />
+          {children}
+        </SessionProvider>
       </body>
     </html>
   );
