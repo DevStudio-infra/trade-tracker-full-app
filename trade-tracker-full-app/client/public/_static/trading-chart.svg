@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1200" height="675" viewBox="0 0 1200 675" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Grid lines -->
+  <g opacity="0.1" stroke="currentColor">
+    <line x1="0" y1="168.75" x2="1200" y2="168.75" />
+    <line x1="0" y1="337.5" x2="1200" y2="337.5" />
+    <line x1="0" y1="506.25" x2="1200" y2="506.25" />
+    <line x1="240" y1="0" x2="240" y2="675" />
+    <line x1="480" y1="0" x2="480" y2="675" />
+    <line x1="720" y1="0" x2="720" y2="675" />
+    <line x1="960" y1="0" x2="960" y2="675" />
+  </g>
+
+  <!-- Main chart line -->
+  <path d="M0,337.5 C120,337.5 180,168.75 240,168.75 C300,168.75 360,506.25 420,506.25 C480,506.25 540,168.75 600,168.75 C660,168.75 720,337.5 780,337.5 C840,337.5 900,168.75 960,168.75 C1020,168.75 1080,337.5 1200,337.5"
+        stroke="url(#gradient)"
+        stroke-width="3"
+        fill="none" />
+
+  <!-- Area under the chart -->
+  <path d="M0,337.5 C120,337.5 180,168.75 240,168.75 C300,168.75 360,506.25 420,506.25 C480,506.25 540,168.75 600,168.75 C660,168.75 720,337.5 780,337.5 C840,337.5 900,168.75 960,168.75 C1020,168.75 1080,337.5 1200,337.5 V675 H0 Z"
+        fill="url(#areaGradient)"
+        opacity="0.2" />
+
+  <!-- Data points -->
+  <g>
+    <circle cx="240" cy="168.75" r="4" fill="currentColor" />
+    <circle cx="420" cy="506.25" r="4" fill="currentColor" />
+    <circle cx="600" cy="168.75" r="4" fill="currentColor" />
+    <circle cx="780" cy="337.5" r="4" fill="currentColor" />
+    <circle cx="960" cy="168.75" r="4" fill="currentColor" />
+  </g>
+
+  <!-- Gradients -->
+  <defs>
+    <linearGradient id="gradient" x1="0" y1="0" x2="1200" y2="0">
+      <stop offset="0%" stop-color="#3B82F6" />
+      <stop offset="100%" stop-color="#2563EB" />
+    </linearGradient>
+    <linearGradient id="areaGradient" x1="600" y1="168.75" x2="600" y2="675">
+      <stop offset="0%" stop-color="#3B82F6" stop-opacity="0.3" />
+      <stop offset="100%" stop-color="#3B82F6" stop-opacity="0" />
+    </linearGradient>
+  </defs>
+</svg>

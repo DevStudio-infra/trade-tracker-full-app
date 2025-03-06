@@ -1,0 +1,1 @@
+[33mfc789ce[m[33m ([m[1;36mHEAD -> [m[1;32mmain[m[33m)[m Update pricing and subscription features: - Update Pro plan pricing to .99/month and /year - Fix dashboard display and billing page layout - Update pricing cards component - Fix webmanifest paths - Add subscription form component
