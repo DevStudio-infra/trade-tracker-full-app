@@ -1,7 +1,6 @@
 "use server";
 
 import { auth } from "@/auth";
-import { prisma } from "@/lib/db";
 import { userNameSchema } from "@/lib/validations/user";
 import { revalidatePath } from "next/cache";
 
@@ -19,20 +18,23 @@ export async function updateUserName(userId: string, data: FormData) {
 
     const { name } = userNameSchema.parse(data);
 
-    // Update the user name.
-    await prisma.user.update({
-      where: {
-        id: userId,
+    // Call the server endpoint to update the user name
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/users/${userId}/name`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
       },
-      data: {
-        name: name,
-      },
-    })
+      body: JSON.stringify({ name }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to update user name');
+    }
 
     revalidatePath('/dashboard/settings');
     return { status: "success" };
   } catch (error) {
-    // console.log(error)
+    console.error('Error updating user name:', error);
     return { status: "error" }
   }
 }

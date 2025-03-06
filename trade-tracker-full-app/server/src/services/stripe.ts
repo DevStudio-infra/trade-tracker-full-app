@@ -134,6 +134,37 @@ class StripeService {
     }
   }
 
+  public async generateCheckoutSession(userId: string, email: string, priceId: string, returnUrl: string): Promise<string> {
+    const stripeSession = await stripeClient.checkout.sessions.create({
+      success_url: returnUrl,
+      cancel_url: returnUrl,
+      payment_method_types: ["card"],
+      mode: "subscription",
+      billing_address_collection: "auto",
+      customer_email: email,
+      line_items: [
+        {
+          price: priceId,
+          quantity: 1,
+        },
+      ],
+      metadata: {
+        userId,
+      },
+    });
+
+    return stripeSession.url || "";
+  }
+
+  public async generatePortalSession(customerId: string, returnUrl: string): Promise<string> {
+    const stripeSession = await stripeClient.billingPortal.sessions.create({
+      customer: customerId,
+      return_url: returnUrl,
+    });
+
+    return stripeSession.url || "";
+  }
+
   private async getUserIdFromCustomerId(customerId: string): Promise<string | null> {
     const subscription = await prisma.subscription.findFirst({
       where: { stripeCustomerId: customerId },

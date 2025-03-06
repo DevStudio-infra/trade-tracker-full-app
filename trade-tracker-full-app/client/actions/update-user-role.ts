@@ -3,8 +3,6 @@
 import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 import { UserRole } from "@prisma/client";
-
-import { prisma } from "@/lib/db";
 import { userRoleSchema } from "@/lib/validations/user";
 
 export type FormData = {
@@ -21,20 +19,23 @@ export async function updateUserRole(userId: string, data: FormData) {
 
     const { role } = userRoleSchema.parse(data);
 
-    // Update the user role.
-    await prisma.user.update({
-      where: {
-        id: userId,
+    // Call the server endpoint to update the user role
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/users/${userId}/role`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
       },
-      data: {
-        role: role,
-      },
+      body: JSON.stringify({ role }),
     });
+
+    if (!response.ok) {
+      throw new Error('Failed to update user role');
+    }
 
     revalidatePath("/dashboard/settings");
     return { status: "success" };
   } catch (error) {
-    // console.log(error)
+    console.error('Error updating user role:', error);
     return { status: "error" };
   }
 }
