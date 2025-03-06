@@ -1,3 +1,5 @@
+"use client";
+
 import { NavBar } from "@/components/layout/navbar";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { NavMobile } from "@/components/layout/mobile-nav";
