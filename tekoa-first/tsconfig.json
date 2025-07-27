@@ -1,0 +1,28 @@
+{
+  "compilerOptions": {
+    "target": "es2020",
+    "lib": ["dom", "dom.iterable", "es6"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "incremental": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./*/src/*"]
+    }
+  },
+  "include": ["**/*.ts", "**/*.tsx", "tekoa-trading/**/*.ts", "tekoa-trading/**/*.tsx", "the-trade-tracker-v2.0/**/*.ts", "the-trade-tracker-v2.0/**/*.tsx"],
+  "exclude": ["node_modules", "**/node_modules/**"]
+}

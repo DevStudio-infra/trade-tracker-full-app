@@ -1,0 +1,195 @@
+{
+  "enhanced_existing_strategies": [
+    {
+      "name": "Mean Reversion with Moving Averages (Enhanced)",
+      "category": "swing_trade",
+      "description": "Enhanced mean reversion strategy with comprehensive risk management. Identifies price reversals when price significantly deviates from moving averages using EMA crossovers and dynamic position sizing. Incorporates trailing stops, multiple exit strategies, and spread-aware execution for institutional-grade trade management.",
+      "shortDescription": "Enhanced price reversal strategy using EMA crossovers with advanced risk management",
+      "indicators": [
+        {
+          "type": "ema",
+          "params": { "period": 20, "color": "blue" },
+          "required": true,
+          "description": "Fast EMA for entry signals and trend momentum"
+        },
+        {
+          "type": "ema",
+          "params": { "period": 50, "color": "orange" },
+          "required": true,
+          "description": "Slow EMA for trend direction and strength filter"
+        },
+        {
+          "type": "rsi",
+          "params": { "period": 14 },
+          "required": true,
+          "description": "RSI for momentum confirmation and divergence analysis"
+        },
+        {
+          "type": "atr",
+          "params": { "period": 14 },
+          "required": true,
+          "description": "ATR for dynamic stop placement and position sizing"
+        }
+      ],
+      "timeframes": ["D1", "H4", "H1"],
+      "entryConditions": [
+        "Price crosses above EMA 20 after being below EMA 50 with RSI confirmation <45 (LONG)",
+        "Price crosses below EMA 20 after being above EMA 50 with RSI confirmation >55 (SHORT)",
+        "Wait for pullback completion and momentum shift confirmation",
+        "Volume increase on reversal candle (minimum 1.5x average volume)",
+        "Use PENDING LIMIT ORDER 3-5 pips into pullback for optimal entry"
+      ],
+      "exitConditions": [
+        "Primary target: Price returns to EMA 50 level",
+        "Extended target: 2:1 risk/reward ratio based on ATR stop distance",
+        "Stop loss: Below recent swing low + 1x ATR (LONG) or above swing high + 1x ATR (SHORT)",
+        "Partial exit: 50% position at EMA 50, trail remainder with 2x ATR trailing stop",
+        "Time exit: Close position if no progress within 3-5 trading sessions"
+      ],
+      "riskManagement": {
+        "riskPerTrade": "1-2%",
+        "riskRewardRatio": 2.5,
+        "stopLossType": "swing_points_plus_atr",
+        "takeProfitType": "ema_target_or_ratio",
+        "orderType": "pending_limit",
+        "trailingStop": "move to breakeven at EMA 50 touch, then trail by 2x ATR with 0.5x ATR buffer",
+        "partialTakeProfit": "50% at EMA 50, scale out 25% more at 1.5:1 R:R",
+        "positionSizing": "volatility-adjusted using ATR - reduce size when ATR > 150% of 20-period average",
+        "invalidation": "close immediately if price breaks 1.5x ATR beyond EMA 50 on wrong side"
+      },
+      "minRiskPerTrade": 100,
+      "maxRiskPerTrade": 200,
+      "confidenceThreshold": 80,
+      "winRateExpected": 68,
+      "riskRewardRatio": 2.5,
+      "complexity": "advanced",
+      "marketCondition": "ranging_to_trending"
+    },
+    {
+      "name": "Support/Resistance Breakout (Enhanced)",
+      "category": "day_trade",
+      "description": "Professional breakout strategy with institutional-grade execution and risk management. Uses volume profile analysis, multiple timeframe confirmation, and dynamic position sizing. Incorporates false breakout filters, trailing stops, and spread-sensitive order execution for maximum edge.",
+      "shortDescription": "Professional breakout strategy with volume profile and multi-timeframe confirmation",
+      "indicators": [
+        {
+          "type": "volume",
+          "required": true,
+          "description": "Volume spike confirmation and institutional interest analysis"
+        },
+        {
+          "type": "atr",
+          "params": { "period": 14 },
+          "required": true,
+          "description": "Volatility measurement for breakout validation and position sizing"
+        },
+        {
+          "type": "rsi",
+          "params": { "period": 14 },
+          "required": true,
+          "description": "Momentum confirmation and divergence analysis at key levels"
+        }
+      ],
+      "timeframes": ["H1", "H4", "D1"],
+      "entryConditions": [
+        "Identify key support/resistance level with minimum 3 touches over multiple timeframes",
+        "Price breaks above resistance with volume spike >2x 20-period average (LONG)",
+        "Price breaks below support with volume spike >2x 20-period average (SHORT)",
+        "Wait for candle close confirmation beyond level (no false breakout)",
+        "RSI momentum alignment: >50 for longs, <50 for shorts",
+        "Use STOP ORDER 2-3 pips beyond confirmed break with tight spread conditions"
+      ],
+      "exitConditions": [
+        "Primary target: Next major support/resistance level or previous swing extreme",
+        "Measured move: Distance of previous consolidation projected from breakout point",
+        "Stop loss: Return below breakout level + 1x ATR buffer",
+        "Trailing strategy: Move to breakeven at 1:1 R:R, then trail by 1.5x ATR",
+        "Volume divergence exit: If volume decreases significantly during move"
+      ],
+      "riskManagement": {
+        "riskPerTrade": "1-1.5%",
+        "riskRewardRatio": 2.5,
+        "stopLossType": "level_breach_plus_atr",
+        "takeProfitType": "next_level_or_measured_move",
+        "orderType": "stop_order_with_spread_filter",
+        "trailingStop": "breakeven at 1:1, then aggressive 1.5x ATR trail with 0.5x ATR buffer",
+        "falseBreakoutFilter": "require 2 consecutive closes beyond level for validation",
+        "volumeConfirmation": "minimum 200% volume increase required for entry",
+        "sessionTiming": "avoid low-liquidity periods and major news events",
+        "spreadSensitive": "avoid entries if spread >150% of normal during breakout"
+      },
+      "minRiskPerTrade": 100,
+      "maxRiskPerTrade": 175,
+      "confidenceThreshold": 85,
+      "winRateExpected": 65,
+      "riskRewardRatio": 2.5,
+      "complexity": "advanced",
+      "marketCondition": "trending_with_volatility"
+    },
+    {
+      "name": "Bollinger Bands Scalping (Enhanced)",
+      "category": "scalping",
+      "description": "Professional scalping strategy with institutional-grade execution and risk management. Uses dynamic Bollinger Bands with RSI divergence analysis, tick-by-tick volume monitoring, and spread-sensitive order placement. Incorporates session-specific rules and maximum daily risk limits.",
+      "shortDescription": "Professional BB scalping with RSI divergence and session-specific execution rules",
+      "indicators": [
+        {
+          "type": "bb",
+          "params": { "period": 20, "stdDev": 2.0 },
+          "required": true,
+          "description": "Dynamic volatility bands with squeeze detection"
+        },
+        {
+          "type": "rsi",
+          "params": { "period": 14 },
+          "required": true,
+          "description": "Fast momentum for extreme detection and divergence"
+        },
+        {
+          "type": "volume",
+          "required": true,
+          "description": "Tick volume for rejection confirmation"
+        },
+        {
+          "type": "atr",
+          "params": { "period": 14 },
+          "required": true,
+          "description": "Dynamic position sizing and spread filtering"
+        }
+      ],
+      "timeframes": ["M1", "M5", "M15"],
+      "entryConditions": [
+        "Price touches BB lower band with RSI <25 and showing bullish divergence (LONG)",
+        "Price touches BB upper band with RSI >75 and showing bearish divergence (SHORT)",
+        "Wait for rejection candle (hammer, doji, shooting star) at band touch",
+        "Volume confirmation: spike >150% on rejection candle",
+        "Spread filter: Only enter if spread <2 pips during London/NY sessions",
+        "Use LIMIT ORDER 1-2 pips into band touch for better execution"
+      ],
+      "exitConditions": [
+        "Primary target: BB middle line (20 SMA)",
+        "Extended target: Opposite BB band for breakout scenarios",
+        "Quick scalp: 5-8 pips profit in fast-moving markets",
+        "Stop loss: 8-12 pips beyond band touch (tight risk control)",
+        "Time exit: Close position if no movement within 15-30 minutes"
+      ],
+      "riskManagement": {
+        "riskPerTrade": "0.25-0.5%",
+        "riskRewardRatio": 1.8,
+        "stopLossType": "fixed_pips_with_spread_adjustment",
+        "takeProfitType": "bb_middle_or_opposite_band",
+        "orderType": "limit_order_with_tight_spread",
+        "trailingStop": "no trailing - quick in/out with manual management",
+        "maxDailyTrades": "limit to 5-8 trades per session to avoid overtrading",
+        "sessionRules": "only trade during London (8-12 GMT) and NY (13-17 GMT) sessions",
+        "volatilityFilter": "avoid when ATR >200% of 20-period average",
+        "spreadMonitoring": "exit immediately if spread widens >3 pips during position"
+      },
+      "minRiskPerTrade": 25,
+      "maxRiskPerTrade": 50,
+      "confidenceThreshold": 75,
+      "winRateExpected": 78,
+      "riskRewardRatio": 1.8,
+      "complexity": "advanced",
+      "marketCondition": "ranging_volatile"
+    }
+  ]
+}

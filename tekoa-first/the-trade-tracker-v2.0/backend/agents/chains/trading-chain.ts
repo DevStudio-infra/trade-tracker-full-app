@@ -205,13 +205,13 @@ export class TradingChain {
         console.log("✅ LLM instance created successfully");
       }
 
-      // Create the prompt template - Updated to support multimodal inputs
+      // Create the prompt template - Enhanced with bid/ask spread awareness
       const prompt = PromptTemplate.fromTemplate(`
-You are an expert trading analyst with deep knowledge of technical analysis and risk management.
+You are an expert trading analyst with deep knowledge of technical analysis, risk management, and market microstructure.
 
 CHART ANALYSIS CONTEXT:
 - Symbol: {symbol}
-- Timeframe: This is an M1 (1-minute) chart - consider this for position sizing and risk management
+- Timeframe: {timeframe} - IMPORTANT: Timeframe indicates chart granularity, NOT strategy type
 - Current Price: {currentPrice}
 - Market Conditions: {marketConditions}
 - Strategy: You are analyzing this chart based on the provided trading strategy
@@ -226,47 +226,78 @@ Technical Analysis: {technicalAnalysis}
 Position Sizing: {positionSizing}
 Portfolio Status: {portfolioStatus}
 
+🎯 CRITICAL STRATEGY AWARENESS:
+Different strategies can use ANY timeframe - don't assume strategy type from timeframe alone:
+- M1 charts can be used for: scalping, momentum, breakout, news trading, arbitrage
+- H1 charts can be used for: swing trading, trend following, range trading, position trading
+- Strategy rules and risk tolerance define the approach, NOT the timeframe
+- Consider the FULL strategy context provided, not just the chart timeframe
+
+💰 BID/ASK SPREAD & EXECUTION COST ANALYSIS:
+When making trading decisions, ALWAYS consider:
+- Current bid/ask spread as a percentage of price
+- Spread impact on breakeven point (entry + spread = minimum profitable exit)
+- For tight spreads (<0.05%): More favorable for frequent trading
+- For wide spreads (>0.2%): Requires larger price moves to profit
+- Slippage risk increases with spread width and volatility
+- Market orders pay the spread immediately; limit orders may get filled at better prices
+
+SPREAD-AWARE DECISION CRITERIA:
+- Tight Spreads: Can be more aggressive with entries, scalping strategies viable
+- Wide Spreads: Require higher confidence, longer holding periods, larger target moves
+- If spread > 0.3% of current price, consider reducing position size or using limit orders
+- Factor spread cost into stop-loss placement (stop should be spread + technical level)
+
+STRATEGY-TIMEFRAME COMBINATIONS (Examples):
+- Scalping on M1: Quick entries/exits, tight spreads essential, high-frequency
+- Trend Following on M1: Intraday trend capture, medium holding time
+- Breakout Trading on H1: Position for larger moves, can handle wider spreads
+- Swing Trading on M1: Use fine-grained entry timing for multi-day holds
+
 TRADING PHILOSOPHY - CONFIDENCE-BASED DECISION MAKING:
 - HIGH CONFIDENCE (80-100%): Take decisive action when signals are clear and strong
 - MEDIUM CONFIDENCE (60-79%): Be moderately aggressive with proper risk management
 - LOW CONFIDENCE (40-59%): Hold or take very small positions
 - VERY LOW CONFIDENCE (<40%): Reject the trade
 
-DECISION GUIDELINES:
+ENHANCED DECISION GUIDELINES:
 1. **EXECUTE_TRADE**: When you see clear, strong signals with good risk/reward (confidence 60%+)
    - Clear trend direction with momentum
    - Strong technical indicator alignment
    - Good support/resistance levels for stops
-   - Risk/reward ratio of at least 1:2
+   - Risk/reward ratio accounts for spread costs (minimum 1:2 after spread)
+   - Spread is reasonable for the strategy type
 
-2. **HOLD**: When signals are mixed or weak but not clearly negative (confidence 40-60%)
+2. **HOLD**: When signals are mixed or spread conditions are unfavorable (confidence 40-60%)
    - Consolidation patterns
    - Conflicting indicators
    - Uncertain market direction
+   - Spread too wide for strategy requirements
 
-3. **REJECT**: When signals are clearly negative or too risky (confidence <40%)
+3. **REJECT**: When signals are clearly negative, spreads too costly, or setup poor (confidence <40%)
    - Strong opposing trends
-   - Poor risk/reward ratios
+   - Poor risk/reward ratios after spread costs
+   - Excessive spread for expected move size
    - High volatility without clear direction
 
-CRITICAL INSTRUCTIONS:
-- BE DECISIVE when you have strong conviction (confidence 70%+)
-- Don't be overly conservative if technical analysis supports a trade
-- M1 timeframe requires quick decisions - don't overthink consolidation patterns
-- Use tight but logical stop losses based on nearby support/resistance
-- Consider that markets move quickly on M1 - waiting too long means missing opportunities
+STOP LOSS & TAKE PROFIT STRATEGY (Spread-Aware):
+- Place stops beyond nearest support/resistance PLUS spread buffer
+- For M1 timeframe: typical stop distance 0.3-0.8% + spread width
+- Take profit should account for spread costs: minimum (spread x 2) + technical target
+- In wide spread environments, use wider stops and targets proportionally
+- Consider partial profit-taking to reduce spread impact
 
-STOP LOSS & TAKE PROFIT STRATEGY:
-- Place stops just beyond the nearest significant support/resistance level
-- For M1 timeframe, typical stop distance: 0.3-0.8% from entry
-- Take profit at next significant resistance/support or 1.5-3x the stop distance
-- Adjust based on volatility - higher volatility = wider stops
+BID/ASK SPREAD DECISION MATRIX:
+- Spread < 0.05%: Green light for all strategies, tight stops viable
+- Spread 0.05-0.15%: Caution for scalping, good for other strategies
+- Spread 0.15-0.3%: Avoid scalping, use wider targets, consider limit orders
+- Spread > 0.3%: High caution, only high-confidence setups, wide targets
 
 Return your analysis in the following JSON format (ensure valid JSON):
 {{
   "decision": "EXECUTE_TRADE" | "HOLD" | "REJECT",
   "confidence": 0-100,
-  "reasoning": "your detailed analysis",
+  "reasoning": "your detailed analysis including spread considerations",
   "tradeParams": {{
     "symbol": "{symbol}",
     "direction": "BUY" | "SELL" | null,
@@ -275,27 +306,39 @@ Return your analysis in the following JSON format (ensure valid JSON):
     "stopLoss": number | null,
     "takeProfit": number | null
   }},
-  "chartAnalysis": {{ "m1": {{}}, "m15": {{}} }},
-  "riskFactors": ["array of risk factors"],
-  "executionStrategy": {{ "priority": "High/Medium/Low", "timeframe": "..." }}
+  "spreadAnalysis": {{
+    "spreadPercentage": number,
+    "spreadImpact": "LOW" | "MEDIUM" | "HIGH",
+    "adjustedTargets": boolean,
+    "executionRecommendation": "MARKET" | "LIMIT" | "CONDITIONAL"
+  }},
+  "strategyAlignment": {{
+    "timeframeAppropriate": boolean,
+    "strategyType": "inferred strategy type",
+    "holdingPeriodExpected": "SHORT" | "MEDIUM" | "LONG",
+    "spreadTolerance": "TIGHT" | "MODERATE" | "WIDE"
+  }},
+  "chartAnalysis": "technical analysis summary",
+  "riskFactors": ["array of risk factors including spread risks"],
+  "executionStrategy": {{ "priority": "High/Medium/Low", "timeframe": "...", "notes": "execution timing and method" }}
 }}
 
-CRITICAL: Use the EXACT symbol {symbol} in tradeParams.symbol field. Do NOT use any other symbol.
+CRITICAL:
+- Use the EXACT symbol {symbol} in tradeParams.symbol field
+- ALWAYS analyze spread impact before recommending trades
+- Consider strategy context beyond just timeframe
+- Factor execution costs into all risk/reward calculations
+- Be more conservative with wide spreads, more aggressive with tight spreads
+
       `);
 
-      // Create the chain
-      this.chain = new LLMChain({
-        llm: this.llm,
-        prompt: prompt,
-        verbose: process.env.NODE_ENV === "development",
-      });
-
+      this.chain = prompt.pipe(this.llm).pipe(this.parser);
       this.initialized = true;
-      console.log("✅ Trading Chain initialized successfully");
+
+      loggerService.info("✅ Enhanced Trading Chain initialized successfully with spread awareness");
     } catch (error) {
-      console.error("❌ Error initializing Trading Chain:", error);
-      console.warn("⚠️  Falling back to rule-based decisions without LLM");
-      this.initialized = true; // Mark as initialized but in fallback mode
+      loggerService.error("❌ Failed to initialize Trading Chain:", error);
+      throw error;
     }
   }
 
@@ -307,6 +350,9 @@ CRITICAL: Use the EXACT symbol {symbol} in tradeParams.symbol field. Do NOT use 
       symbol: string;
       currentPrice: number;
       marketConditions: string;
+      spread?: number; // Add spread data
+      bid?: number; // Add bid data
+      ask?: number; // Add ask data
     },
     agentResults: {
       riskAssessment: any;
@@ -345,183 +391,42 @@ CRITICAL: Use the EXACT symbol {symbol} in tradeParams.symbol field. Do NOT use 
         console.warn(`⚠️ Higher timeframe context check failed: ${error instanceof Error ? error.message : "Unknown error"}`);
       }
 
-      // Enhanced debugging for LLM availability
-      console.log("🔍 Trading Chain Debug:");
-      console.log("- this.initialized:", this.initialized);
-      console.log("- this.llm exists:", !!this.llm);
-      console.log("- this.chain exists:", !!this.chain);
-      console.log("- GOOGLE_API_KEY exists:", !!process.env.GOOGLE_API_KEY);
+      // Enhanced market conditions with spread information
+      let enhancedMarketConditions = marketData.marketConditions;
 
-      // If no LLM is available, use fallback decision with multi-timeframe data
-      if (!this.llm || !this.chain) {
-        console.warn("⚠️  No LLM available - using fallback decision logic");
-        console.warn("- LLM status:", this.llm ? "✅ Available" : "❌ Missing");
-        console.warn("- Chain status:", this.chain ? "✅ Available" : "❌ Missing");
-        const fallbackDecision = this.createFallbackDecision(agentResults, marketData, agentResults.higherTimeframeAnalysis);
+      if (marketData.spread || (marketData.bid && marketData.ask)) {
+        const spread = marketData.spread || marketData.ask - marketData.bid;
+        const spreadPercentage = (spread / marketData.currentPrice) * 100;
 
-        return {
-          success: true,
-          data: fallbackDecision,
-          metadata: {
-            executionTime: 0,
-            source: "TradingChain-Fallback",
-          },
-        };
+        enhancedMarketConditions += `\n\nSPREAD ANALYSIS:`;
+        enhancedMarketConditions += `\n- Current Bid: ${marketData.bid || "N/A"}`;
+        enhancedMarketConditions += `\n- Current Ask: ${marketData.ask || "N/A"}`;
+        enhancedMarketConditions += `\n- Spread: ${spread.toFixed(5)} (${spreadPercentage.toFixed(3)}%)`;
+        enhancedMarketConditions += `\n- Spread Impact: ${spreadPercentage < 0.05 ? "LOW" : spreadPercentage < 0.15 ? "MEDIUM" : "HIGH"}`;
+        enhancedMarketConditions += `\n- Execution Cost: Entry must move ${spreadPercentage.toFixed(3)}% to breakeven`;
       }
 
-      let result;
-
-      // If we have a chart image, use multimodal approach
-      if (chartImageBase64 && this.llm) {
-        console.log("📊 Using multimodal analysis with chart image");
-        console.log(`🔍 Chart image base64 length: ${chartImageBase64.length}`);
-        console.log(`🔍 Chart image prefix: ${chartImageBase64.substring(0, 50)}...`);
-
-        // Ensure we have clean base64 data for Gemini API
-        let imageUrl = chartImageBase64;
-        if (chartImageBase64.startsWith("data:")) {
-          // Already has data URL prefix
-          imageUrl = chartImageBase64;
-        } else {
-          // Add data URL prefix
-          imageUrl = `data:image/png;base64,${chartImageBase64}`;
-        }
-
-        console.log(`🔍 Final image URL for Gemini: ${imageUrl.substring(0, 50)}...`);
-        console.log(`🔍 Final image URL length: ${imageUrl.length}`);
-
-        // Validate the base64 data
-        const base64DataMatch = imageUrl.match(/^data:image\/[^;]+;base64,(.+)$/);
-        if (!base64DataMatch || !base64DataMatch[1]) {
-          console.error("❌ Invalid base64 data format for Gemini API");
-          throw new Error("Invalid base64 image data format");
-        }
-
-        const actualBase64Data = base64DataMatch[1];
-        console.log(` Actual base64 data length: ${actualBase64Data.length}`);
-
-        if (actualBase64Data.length < 100) {
-          console.error("❌ Base64 data too short, likely invalid");
-          throw new Error("Base64 image data appears to be invalid or too short");
-        }
-
-        // Create multimodal message with chart image
-        const message = new HumanMessage({
-          content: [
-            {
-              type: "text",
-              text: `
-You are an expert trading analyst with deep knowledge of technical analysis and risk management.
-
-CHART ANALYSIS CONTEXT:
-- Symbol: ${marketData.symbol}
-- Timeframe: This is an M1 (1-minute) chart - consider this for position sizing and risk management
-- Current Price: ${marketData.currentPrice}
-- Market Conditions: ${marketData.marketConditions}
-- Strategy: You are analyzing this chart based on the provided trading strategy
-
-ACCOUNT INFORMATION:
-- Account Balance: ${accountData.balance}
-- Available Balance: ${accountData.availableBalance}
-
-AGENT ANALYSIS RESULTS:
-Risk Assessment: ${JSON.stringify(agentResults.riskAssessment, null, 2)}
-Technical Analysis: ${JSON.stringify(agentResults.technicalAnalysis, null, 2)}
-Position Sizing: ${JSON.stringify(agentResults.positionSizing, null, 2)}
-Portfolio Status: ${JSON.stringify(agentResults.portfolioStatus, null, 2)}
-
-TRADING PHILOSOPHY - CONFIDENCE-BASED DECISION MAKING:
-- HIGH CONFIDENCE (80-100%): Take decisive action when signals are clear and strong
-- MEDIUM CONFIDENCE (60-79%): Be moderately aggressive with proper risk management
-- LOW CONFIDENCE (40-59%): Hold or take very small positions
-- VERY LOW CONFIDENCE (<40%): Reject the trade
-
-DECISION GUIDELINES:
-1. **EXECUTE_TRADE**: When you see clear, strong signals with good risk/reward (confidence 60%+)
-   - Clear trend direction with momentum
-   - Strong technical indicator alignment
-   - Good support/resistance levels for stops
-   - Risk/reward ratio of at least 1:2
-
-2. **HOLD**: When signals are mixed or weak but not clearly negative (confidence 40-60%)
-   - Consolidation patterns
-   - Conflicting indicators
-   - Uncertain market direction
-
-3. **REJECT**: When signals are clearly negative or too risky (confidence <40%)
-   - Strong opposing trends
-   - Poor risk/reward ratios
-   - High volatility without clear direction
-
-CRITICAL INSTRUCTIONS:
-- BE DECISIVE when you have strong conviction (confidence 70%+)
-- Don't be overly conservative if technical analysis supports a trade
-- M1 timeframe requires quick decisions - don't overthink consolidation patterns
-- Use tight but logical stop losses based on nearby support/resistance
-- Consider that markets move quickly on M1 - waiting too long means missing opportunities
-
-STOP LOSS & TAKE PROFIT STRATEGY:
-- Place stops just beyond the nearest significant support/resistance level
-- For M1 timeframe, typical stop distance: 0.3-0.8% from entry
-- Take profit at next significant resistance/support or 1.5-3x the stop distance
-- Adjust based on volatility - higher volatility = wider stops
-
-Return your analysis in the following JSON format (ensure valid JSON):
-{
-  "decision": "EXECUTE_TRADE" | "HOLD" | "REJECT",
-  "confidence": 0-100,
-  "reasoning": "your detailed analysis",
-  "tradeParams": {
-    "symbol": "${marketData.symbol}",
-    "direction": "BUY" | "SELL" | null,
-    "quantity": number | 0,
-    "orderType": "MARKET" | "LIMIT" | null,
-    "stopLoss": number | null,
-    "takeProfit": number | null
-  },
-  "chartAnalysis": { "m1": {}, "m15": {} },
-  "riskFactors": ["array of risk factors"],
-  "executionStrategy": { "priority": "High/Medium/Low", "timeframe": "..." }
-}
-
-CRITICAL: Use the EXACT symbol "${marketData.symbol}" in tradeParams.symbol field. Do NOT use "BTC/USD" or any other symbol.
-SYMBOL VERIFICATION: The symbol you MUST use is: ${marketData.symbol}
-              `,
-            },
-            {
-              type: "image_url",
-              image_url: {
-                url: imageUrl,
-              },
-            },
-          ],
-        });
-
-        // Invoke the LLM directly with multimodal message using rate limiter with timeout
-        const rateLimiter = GeminiRateLimiter.getInstance();
-        result = await rateLimiter.addToQueueWithTimeout(async () => {
-          return await this.llm!.invoke([message]);
-        }, 45000); // 45 second timeout for multimodal analysis
-        console.log("🔍 Multimodal LLM Response:", result.content);
-      } else {
-        // Use traditional chain approach without image
-        console.log("📊 Using text-only analysis (no chart image)");
-        const rateLimiter = GeminiRateLimiter.getInstance();
-        result = await rateLimiter.addToQueueWithTimeout(async () => {
-          return await this.chain.call({
-            symbol: marketData.symbol,
-            currentPrice: marketData.currentPrice,
-            marketConditions: marketData.marketConditions,
-            accountBalance: accountData.balance,
-            availableBalance: accountData.availableBalance,
-            riskAssessment: JSON.stringify(agentResults.riskAssessment, null, 2),
-            technicalAnalysis: JSON.stringify(agentResults.technicalAnalysis, null, 2),
-            positionSizing: JSON.stringify(agentResults.positionSizing, null, 2),
-            portfolioStatus: JSON.stringify(agentResults.portfolioStatus, null, 2),
-          });
-        }, 30000); // 30 second timeout for text-only analysis
-        console.log("🔍 Text-only LLM Response:", result.text);
+      // Include higher timeframe analysis in market conditions
+      if (agentResults.higherTimeframeAnalysis) {
+        enhancedMarketConditions += `\n\nHIGHER TIMEFRAME CONTEXT:\n${JSON.stringify(agentResults.higherTimeframeAnalysis, null, 2)}`;
       }
+
+      // Prepare the input for the chain
+      const input = {
+        symbol: marketData.symbol,
+        currentPrice: marketData.currentPrice,
+        marketConditions: enhancedMarketConditions,
+        accountBalance: accountData.balance,
+        availableBalance: accountData.availableBalance,
+        riskAssessment: JSON.stringify(agentResults.riskAssessment, null, 2),
+        technicalAnalysis: JSON.stringify(agentResults.technicalAnalysis, null, 2),
+        positionSizing: JSON.stringify(agentResults.positionSizing, null, 2),
+        portfolioStatus: JSON.stringify(agentResults.portfolioStatus, null, 2),
+      };
+
+      loggerService.info(`🧠 Making enhanced trading decision for ${marketData.symbol} with spread awareness`);
+
+      const result = await this.chain.invoke(input);
 
       // Extract text from response
       const responseText = result.content || result.text || result;

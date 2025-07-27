@@ -1,0 +1,502 @@
+{
+  "strategy_enhancement_guide": {
+    "overview": "This file contains enhanced versions of existing strategies plus 15 new advanced strategies focused on technical analysis, order management, and professional trading techniques.",
+    "implementation_notes": {
+      "indicators_available": ["sma", "ema", "rsi", "atr", "bb", "macd", "volume"],
+      "order_types": ["market_order", "limit_order", "stop_order", "pending_limit"],
+      "trailing_methods": ["atr_based", "fixed_pips", "percentage", "dynamic"],
+      "timeframes": ["M1", "M5", "M15", "H1", "H4", "D1", "W1"]
+    }
+  },
+  "enhanced_existing_strategies": [
+    {
+      "action": "replace_existing",
+      "original_name": "Mean Reversion with Moving Averages",
+      "enhanced_strategy": {
+        "name": "Mean Reversion with Moving Averages (Professional)",
+        "category": "swing_trade",
+        "description": "Professional mean reversion strategy with institutional-grade risk management. Uses EMA crossovers with RSI confirmation, ATR-based position sizing, dynamic trailing stops, and multi-level profit taking. Includes false signal filtering and session-specific execution rules.",
+        "shortDescription": "Professional EMA mean reversion with ATR stops and dynamic risk management",
+        "indicators": [
+          {
+            "type": "ema",
+            "params": { "period": 20, "color": "blue" },
+            "required": true,
+            "description": "Fast EMA for entry signals"
+          },
+          {
+            "type": "ema",
+            "params": { "period": 50, "color": "orange" },
+            "required": true,
+            "description": "Slow EMA for trend filter"
+          },
+          {
+            "type": "rsi",
+            "params": { "period": 14 },
+            "required": true,
+            "description": "Momentum confirmation"
+          },
+          {
+            "type": "atr",
+            "params": { "period": 14 },
+            "required": true,
+            "description": "Dynamic stops and sizing"
+          }
+        ],
+        "timeframes": ["D1", "H4"],
+        "entryConditions": [
+          "Price crosses above EMA 20 after being below EMA 50 with RSI <45 (LONG)",
+          "Price crosses below EMA 20 after being above EMA 50 with RSI >55 (SHORT)",
+          "Volume confirmation: 1.5x average on signal candle",
+          "Use PENDING LIMIT ORDER 3-5 pips into pullback for better fill"
+        ],
+        "exitConditions": [
+          "Primary: Price reaches EMA 50 level",
+          "Extended: 2.5:1 risk/reward ratio",
+          "Stop: Swing point + 1x ATR",
+          "Trail: Breakeven at 50% target, then 2x ATR trail"
+        ],
+        "riskManagement": {
+          "riskPerTrade": "1-2%",
+          "riskRewardRatio": 2.5,
+          "stopLossType": "swing_plus_atr",
+          "takeProfitType": "ema_target_or_ratio",
+          "orderType": "pending_limit",
+          "trailingStop": "breakeven at 50% target, then dynamic ATR trail",
+          "partialTakeProfit": "50% at EMA 50, 25% at 1.5:1 R:R"
+        },
+        "minRiskPerTrade": 100,
+        "maxRiskPerTrade": 200,
+        "confidenceThreshold": 80,
+        "winRateExpected": 68,
+        "riskRewardRatio": 2.5,
+        "complexity": "advanced",
+        "marketCondition": "ranging"
+      }
+    }
+  ],
+  "new_advanced_strategies": [
+    {
+      "name": "Fibonacci Retracement Master",
+      "category": "swing_trade",
+      "description": "Professional Fibonacci strategy using golden ratio levels (38.2%, 61.8%) with RSI momentum confirmation. Employs pending limit orders at key retracement zones with ATR-based stops and Fibonacci extension targets. Includes multiple timeframe analysis and session timing optimization.",
+      "shortDescription": "Professional Fibonacci retracement with momentum confirmation and extension targets",
+      "indicators": [
+        {
+          "type": "rsi",
+          "params": { "period": 14 },
+          "required": true,
+          "description": "Momentum confirmation at Fibonacci levels"
+        },
+        {
+          "type": "ema",
+          "params": { "period": 50, "color": "blue" },
+          "required": true,
+          "description": "Trend direction filter"
+        },
+        {
+          "type": "atr",
+          "params": { "period": 14 },
+          "required": true,
+          "description": "Dynamic stop placement"
+        }
+      ],
+      "timeframes": ["H1", "H4", "D1"],
+      "entryConditions": [
+        "Identify significant swing high/low (minimum 50 pips or 2x ATR)",
+        "Price retraces to 38.2% or 61.8% Fibonacci level",
+        "RSI shows oversold <35 (LONG) or overbought >65 (SHORT)",
+        "Trend alignment: price above/below EMA 50",
+        "Use PENDING LIMIT ORDER 2-3 pips beyond Fibonacci level"
+      ],
+      "exitConditions": [
+        "Primary target: 127% Fibonacci extension",
+        "Extended target: 161.8% Fibonacci extension",
+        "Stop loss: Beyond 78.6% level + 0.5x ATR",
+        "Trail to breakeven at 50% target, then by 1x ATR"
+      ],
+      "riskManagement": {
+        "riskPerTrade": "1.5-2%",
+        "riskRewardRatio": 2.8,
+        "stopLossType": "fibonacci_plus_atr",
+        "takeProfitType": "fibonacci_extension",
+        "orderType": "pending_limit",
+        "trailingStop": "breakeven at 50% target, then 1x ATR dynamic trail",
+        "levelValidation": "minimum 3 touches for Fibonacci level validation",
+        "sessionOptimization": "best during London/NY overlap for major pairs"
+      },
+      "minRiskPerTrade": 125,
+      "maxRiskPerTrade": 200,
+      "confidenceThreshold": 82,
+      "winRateExpected": 70,
+      "riskRewardRatio": 2.8,
+      "complexity": "advanced",
+      "marketCondition": "trending"
+    },
+    {
+      "name": "Elliott Wave Professional",
+      "category": "swing_trade",
+      "description": "Advanced Elliott Wave strategy targeting Wave 3 impulse moves with precise wave counting and Fibonacci projections. Uses MACD momentum confirmation, ATR volatility stops, and partial profit-taking at key wave targets. Requires expert pattern recognition skills.",
+      "shortDescription": "Expert Elliott Wave strategy targeting high-probability Wave 3 impulse moves",
+      "indicators": [
+        {
+          "type": "atr",
+          "params": { "period": 14 },
+          "required": true,
+          "description": "Volatility-based stops and sizing"
+        },
+        {
+          "type": "macd",
+          "params": { "fastPeriod": 12, "slowPeriod": 26, "signalPeriod": 9 },
+          "required": true,
+          "description": "Wave momentum confirmation"
+        },
+        {
+          "type": "ema",
+          "params": { "period": 21, "color": "red" },
+          "required": true,
+          "description": "Trend alignment"
+        }
+      ],
+      "timeframes": ["H4", "D1", "W1"],
+      "entryConditions": [
+        "Identify completed Wave 1 and Wave 2 (typically 50-61.8% retracement)",
+        "Wave 2 correction complete with clear structure",
+        "MACD histogram turning positive (LONG) or negative (SHORT)",
+        "Enter on break of Wave 2 extreme with momentum",
+        "Use STOP ORDER 5-10 pips beyond Wave 2 for momentum entry"
+      ],
+      "exitConditions": [
+        "Wave 3 target: 161.8% extension of Wave 1",
+        "Partial exit: 50% at 127% extension",
+        "Trail remainder: 2x ATR after 127% reached",
+        "Final exit: If Wave 4 retraces >38.2% of Wave 3"
+      ],
+      "riskManagement": {
+        "riskPerTrade": "2-3%",
+        "riskRewardRatio": 3.2,
+        "stopLossType": "wave_invalidation",
+        "takeProfitType": "fibonacci_wave_projection",
+        "orderType": "stop_order",
+        "trailingStop": "trail by 2x ATR after 127% extension",
+        "partialTakeProfit": "50% at 127% extension, trail remainder aggressively",
+        "waveValidation": "strict Fibonacci ratios and wave structure required"
+      },
+      "minRiskPerTrade": 200,
+      "maxRiskPerTrade": 300,
+      "confidenceThreshold": 88,
+      "winRateExpected": 68,
+      "riskRewardRatio": 3.2,
+      "complexity": "expert",
+      "marketCondition": "trending"
+    },
+    {
+      "name": "Pivot Point Professional",
+      "category": "day_trade",
+      "description": "Multi-timeframe pivot strategy using daily, weekly, and monthly pivots for confluence. Trades both bounces and breakouts with volume confirmation and session timing. Uses mixed order types and dynamic trailing based on pivot distances.",
+      "shortDescription": "Professional pivot strategy with multi-timeframe confluence and session timing",
+      "indicators": [
+        {
+          "type": "rsi",
+          "params": { "period": 14 },
+          "required": true,
+          "description": "Momentum at pivot levels"
+        },
+        {
+          "type": "volume",
+          "required": true,
+          "description": "Breakout confirmation"
+        },
+        {
+          "type": "atr",
+          "params": { "period": 14 },
+          "required": true,
+          "description": "Dynamic sizing"
+        }
+      ],
+      "timeframes": ["M15", "H1", "H4"],
+      "entryConditions": [
+        "Price approaches daily/weekly pivot confluence zone",
+        "Bounce: RSI oversold at support or overbought at resistance",
+        "Breakout: Volume spike >200% with pivot break",
+        "Session timing: London/NY overlap preferred",
+        "Use LIMIT ORDER for bounces, STOP ORDER for breakouts"
+      ],
+      "exitConditions": [
+        "Target: Next pivot level in sequence (S1→PP→R1→R2)",
+        "Stop: 10-15 pips beyond broken pivot",
+        "Trail: Half distance to next pivot after 50% target",
+        "Daily close: Exit all positions 30 min before close"
+      ],
+      "riskManagement": {
+        "riskPerTrade": "1-1.5%",
+        "riskRewardRatio": 2.2,
+        "stopLossType": "pivot_breach_plus_buffer",
+        "takeProfitType": "next_pivot_level",
+        "orderType": "mixed_limit_and_stop",
+        "trailingStop": "half distance to next pivot after 50% target reached",
+        "sessionTiming": "avoid Asian session low liquidity",
+        "gapProtection": "close all before daily/weekly close"
+      },
+      "minRiskPerTrade": 100,
+      "maxRiskPerTrade": 150,
+      "confidenceThreshold": 78,
+      "winRateExpected": 72,
+      "riskRewardRatio": 2.2,
+      "complexity": "intermediate",
+      "marketCondition": "ranging"
+    },
+    {
+      "name": "ATR Momentum Breakout",
+      "category": "day_trade",
+      "description": "Dynamic breakout strategy using ATR for all trade parameters. Identifies consolidations via Bollinger Band squeeze, then trades explosive moves with ATR-based entries, stops, and targets. Adapts to market volatility in real-time.",
+      "shortDescription": "ATR-based momentum breakout with dynamic volatility adaptation",
+      "indicators": [
+        {
+          "type": "atr",
+          "params": { "period": 14 },
+          "required": true,
+          "description": "Primary volatility indicator"
+        },
+        {
+          "type": "bb",
+          "params": { "period": 20, "stdDev": 2.0 },
+          "required": true,
+          "description": "Consolidation detection"
+        },
+        {
+          "type": "volume",
+          "required": true,
+          "description": "Breakout confirmation"
+        }
+      ],
+      "timeframes": ["M15", "H1", "H4"],
+      "entryConditions": [
+        "BB squeeze: width <0.5% of price for consolidation",
+        "Breakout above/below BB with 2x volume spike",
+        "ATR expansion: current ATR >80% of 20-period average",
+        "Use STOP ORDER at BB + 0.5x ATR for momentum entry"
+      ],
+      "exitConditions": ["Primary: Entry + 3x ATR", "Extended: Entry + 5x ATR (25% position)", "Stop: Entry - 1.5x ATR", "Trail: 1x ATR after 2x ATR profit"],
+      "riskManagement": {
+        "riskPerTrade": "1-2%",
+        "riskRewardRatio": 2.0,
+        "stopLossType": "atr_multiple",
+        "takeProfitType": "atr_projection",
+        "orderType": "stop_order",
+        "trailingStop": "dynamic 1x ATR trail, tighten to 0.5x in final stage",
+        "volatilityFilter": "avoid when ATR >150% of average",
+        "partialProfits": "75% at 3x ATR, trail remainder tightly"
+      },
+      "minRiskPerTrade": 100,
+      "maxRiskPerTrade": 200,
+      "confidenceThreshold": 76,
+      "winRateExpected": 67,
+      "riskRewardRatio": 2.0,
+      "complexity": "intermediate",
+      "marketCondition": "volatile"
+    },
+    {
+      "name": "Multi-Confirmation Swing Reversal",
+      "category": "swing_trade",
+      "description": "Precision reversal strategy requiring 3+ confirmation signals at major swing points. Uses RSI/MACD divergence, volume climax, and price action confirmation. Targets previous swing levels with tight risk management.",
+      "shortDescription": "High-probability swing reversal with multiple confirmation requirements",
+      "indicators": [
+        {
+          "type": "rsi",
+          "params": { "period": 14 },
+          "required": true,
+          "description": "Divergence analysis"
+        },
+        {
+          "type": "macd",
+          "params": { "fastPeriod": 12, "slowPeriod": 26, "signalPeriod": 9 },
+          "required": true,
+          "description": "Momentum confirmation"
+        },
+        {
+          "type": "volume",
+          "required": true,
+          "description": "Climax detection"
+        },
+        {
+          "type": "atr",
+          "params": { "period": 14 },
+          "required": true,
+          "description": "Stop placement"
+        }
+      ],
+      "timeframes": ["H1", "H4", "D1"],
+      "entryConditions": [
+        "Identify major swing high/low (3+ bar pattern)",
+        "RSI bearish/bullish divergence at extreme",
+        "Volume climax: 2x average at swing point",
+        "MACD histogram divergence confirmation",
+        "Use LIMIT ORDER 5-10 pips into extreme"
+      ],
+      "exitConditions": ["Target: Previous opposing swing level", "Fibonacci: 61.8% or 78.6% retracement", "Stop: Swing extreme + 1x ATR", "Trail: Breakeven at 40% target"],
+      "riskManagement": {
+        "riskPerTrade": "2-2.5%",
+        "riskRewardRatio": 3.0,
+        "stopLossType": "swing_plus_atr",
+        "takeProfitType": "previous_swing",
+        "orderType": "limit_order",
+        "trailingStop": "breakeven at 40%, then 25% progression",
+        "confirmationRequired": "minimum 3 signals required",
+        "falseBreakoutWatch": "invalidate if swing clearly breached"
+      },
+      "minRiskPerTrade": 200,
+      "maxRiskPerTrade": 250,
+      "confidenceThreshold": 85,
+      "winRateExpected": 70,
+      "riskRewardRatio": 3.0,
+      "complexity": "advanced",
+      "marketCondition": "any"
+    },
+    {
+      "name": "London Session Scalping Pro",
+      "category": "scalping",
+      "description": "Session-specific scalping strategy targeting London open volatility. Trades Asian range breakouts with volume confirmation and tight risk management. Uses session-specific rules and spread monitoring for optimal execution.",
+      "shortDescription": "Professional London session scalping with Asian range analysis",
+      "indicators": [
+        {
+          "type": "atr",
+          "params": { "period": 14 },
+          "required": true,
+          "description": "Volatility sizing"
+        },
+        {
+          "type": "volume",
+          "required": true,
+          "description": "Session analysis"
+        }
+      ],
+      "timeframes": ["M1", "M5", "M15"],
+      "entryConditions": [
+        "Asian range: 00:00-08:00 GMT high/low identification",
+        "London breakout: 08:00-08:30 GMT beyond Asian range",
+        "Volume spike: 3x Asian session average",
+        "Spread condition: <2 pips for major pairs",
+        "Use STOP ORDER 2-3 pips beyond range"
+      ],
+      "exitConditions": ["Quick scalp: 8-15 pips profit", "Extended: Asian range width projection", "Stop: Opposite Asian range boundary", "Time exit: Before 10:00 GMT ECB risk"],
+      "riskManagement": {
+        "riskPerTrade": "0.5-1%",
+        "riskRewardRatio": 1.8,
+        "stopLossType": "range_based",
+        "takeProfitType": "fixed_or_projection",
+        "orderType": "stop_order",
+        "trailingStop": "aggressive 3-5 pip trail after 8 pip profit",
+        "sessionTiming": "strict 08:00-10:00 GMT window",
+        "spreadMonitoring": "exit if spread >3 pips",
+        "maxDailyTrades": "limit to 5-8 quality setups"
+      },
+      "minRiskPerTrade": 50,
+      "maxRiskPerTrade": 100,
+      "confidenceThreshold": 77,
+      "winRateExpected": 73,
+      "riskRewardRatio": 1.8,
+      "complexity": "intermediate",
+      "marketCondition": "volatile"
+    },
+    {
+      "name": "News Fade Professional",
+      "category": "day_trade",
+      "description": "Contrarian strategy fading news spike overreactions with careful timing and risk management. Trades against initial market overreactions targeting mean reversion. Requires deep understanding of market sentiment vs. fundamental impact.",
+      "shortDescription": "Professional news fade strategy with overreaction analysis",
+      "indicators": [
+        {
+          "type": "atr",
+          "params": { "period": 14 },
+          "required": true,
+          "description": "Volatility measurement"
+        },
+        {
+          "type": "bb",
+          "params": { "period": 20, "stdDev": 2.0 },
+          "required": true,
+          "description": "Volatility expansion"
+        }
+      ],
+      "timeframes": ["M1", "M5", "M15"],
+      "entryConditions": [
+        "High-impact news with 30+ pip immediate spike",
+        "Price extends >2.5x ATR from pre-news level",
+        "Wait 5-15 minutes for volatility peak",
+        "Enter on first rejection at extreme",
+        "Use LIMIT ORDER against spike direction"
+      ],
+      "exitConditions": ["Target: 50-70% spike retracement", "Extended: Pre-news level", "Stop: New extreme + 10 pips", "Time: Exit if no progress in 2 hours"],
+      "riskManagement": {
+        "riskPerTrade": "1%",
+        "riskRewardRatio": 2.2,
+        "stopLossType": "spike_extension",
+        "takeProfitType": "retracement_target",
+        "orderType": "limit_order",
+        "trailingStop": "aggressive - breakeven at 30% target",
+        "newsFilter": "only high-impact with clear overreaction",
+        "timingCritical": "wait for volatility peak before entry",
+        "fundamentalAlignment": "ensure fade aligns with longer-term view"
+      },
+      "minRiskPerTrade": 100,
+      "maxRiskPerTrade": 150,
+      "confidenceThreshold": 72,
+      "winRateExpected": 62,
+      "riskRewardRatio": 2.2,
+      "complexity": "expert",
+      "marketCondition": "news_driven"
+    },
+    {
+      "name": "Weekly Gap Professional",
+      "category": "swing_trade",
+      "description": "Statistical gap trading strategy focusing on weekly opening gaps and their tendency to fill. Uses gap size analysis, trend context, and volume confirmation for systematic approach to gap trading.",
+      "shortDescription": "Professional weekly gap strategy with statistical analysis",
+      "indicators": [
+        {
+          "type": "volume",
+          "required": true,
+          "description": "Gap strength analysis"
+        },
+        {
+          "type": "ema",
+          "params": { "period": 21, "color": "blue" },
+          "required": true,
+          "description": "Trend context"
+        }
+      ],
+      "timeframes": ["H4", "D1"],
+      "entryConditions": [
+        "Weekly gap >0.5% from Friday close",
+        "Gap direction aligns with EMA 21 trend",
+        "Volume analysis for gap strength",
+        "Enter gap fill on pullback to edge",
+        "Use LIMIT/STOP ORDER based on gap type"
+      ],
+      "exitConditions": ["Gap fill: Friday close level", "Continuation: Gap size projection", "Stop: Opposite gap side", "Partial: 50% at halfway fill"],
+      "riskManagement": {
+        "riskPerTrade": "1.5-2%",
+        "riskRewardRatio": 2.0,
+        "stopLossType": "gap_failure",
+        "takeProfitType": "gap_fill_target",
+        "orderType": "mixed_based_on_gap_type",
+        "trailingStop": "trail to gap edge at 50% fill",
+        "gapSizeFilter": "0.5-2% optimal range",
+        "statisticalBias": "70% fill rate within 5 days"
+      },
+      "minRiskPerTrade": 150,
+      "maxRiskPerTrade": 200,
+      "confidenceThreshold": 75,
+      "winRateExpected": 70,
+      "riskRewardRatio": 2.0,
+      "complexity": "intermediate",
+      "marketCondition": "any"
+    }
+  ],
+  "implementation_instructions": {
+    "step1": "Replace existing strategies with enhanced versions in predefined-strategies.json",
+    "step2": "Add new advanced strategies to the strategies array",
+    "step3": "Update strategy validation service to handle new order types and risk management features",
+    "step4": "Test each strategy template individually for indicator availability and parameter validation",
+    "step5": "Update AI trading prompts to understand new strategy complexities and order types"
+  }
+}
